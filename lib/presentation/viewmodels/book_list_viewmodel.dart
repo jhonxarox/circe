@@ -14,18 +14,35 @@ class BookListViewModel extends StateNotifier<AsyncValue<List<BookModel>>> {
   }
 
   final BookApiService _service = BookApiService();
+  int _currentPage = 1;
+  bool _hasNextPage = true;
+  bool _isFetching = false;
+  List<BookModel> _books = [];
 
-  Future<void> fetchBooks({String? query}) async {
+  Future<void> fetchBooks({bool isRefresh = false}) async {
+    if (_isFetching || !_hasNextPage) return;
+    _isFetching = true;
+
     try {
-      state = const AsyncLoading();
-      final List<BookModel> books = await _service.fetchBooks(query: query);
-      state = AsyncData(books);
+      if (isRefresh) {
+        _currentPage = 1;
+        _hasNextPage = true;
+        _books = [];
+      }
+
+      final newBooks = await _service.fetchBooks(page: _currentPage);
+      if (newBooks.isEmpty) {
+        _hasNextPage = false;
+      } else {
+        _books.addAll(newBooks);
+        _currentPage++;
+      }
+
+      state = AsyncData([..._books]);
     } catch (e, st) {
       state = AsyncError(e, st);
+    } finally {
+      _isFetching = false;
     }
   }
 }
-// This ViewModel uses Riverpod's StateNotifier to manage the state of the book list.
-// It initializes with a loading state and fetches books from the API.
-// The `fetchBooks` method can be called with an optional search query to filter results.
-// The state is updated to either `AsyncData` with the list of books or `AsyncError` if an error occurs.
