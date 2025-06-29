@@ -2,7 +2,8 @@ import 'package:circe/data/datasources/book_api_service.dart';
 import 'package:circe/data/models/book_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final bookListProvider =
+final StateNotifierProvider<BookListViewModel, AsyncValue<List<BookModel>>>
+    bookListProvider =
     StateNotifierProvider<BookListViewModel, AsyncValue<List<BookModel>>>(
   (ref) => BookListViewModel(),
 );
@@ -12,12 +13,12 @@ class BookListViewModel extends StateNotifier<AsyncValue<List<BookModel>>> {
     fetchBooks();
   }
 
-  final _service = BookApiService();
+  final BookApiService _service = BookApiService();
 
   Future<void> fetchBooks({String? query}) async {
     try {
       state = const AsyncLoading();
-      final books = await _service.fetchBooks(query: query);
+      final List<BookModel> books = await _service.fetchBooks(query: query);
       state = AsyncData(books);
     } catch (e, st) {
       state = AsyncError(e, st);
