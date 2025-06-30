@@ -1,6 +1,8 @@
 import 'package:circe/data/models/book_model.dart';
 import 'package:circe/presentation/viewmodels/book_list_viewmodel.dart';
 import 'package:circe/presentation/widgets/book_card.dart';
+import 'package:circe/presentation/widgets/book_card_skeleton.dart';
+import 'package:circe/utils/debounce.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,14 +15,17 @@ class HomeView extends ConsumerStatefulWidget {
 
 class _HomeViewState extends ConsumerState<HomeView> {
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+  late Debouncer _debouncer;
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(() {
-      final double maxScroll = _scrollController.position.maxScrollExtent;
-      final double currentScroll = _scrollController.position.pixels;
+    _debouncer = Debouncer(milliseconds: 600);
 
+    _scrollController.addListener(() {
+      final maxScroll = _scrollController.position.maxScrollExtent;
+      final currentScroll = _scrollController.position.pixels;
       if (currentScroll >= maxScroll - 300) {
         ref.read(bookListProvider.notifier).fetchBooks();
       }
@@ -30,16 +35,53 @@ class _HomeViewState extends ConsumerState<HomeView> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
+    _debouncer.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final AsyncValue<List<BookModel>> booksState = ref.watch(bookListProvider);
+    final BookListViewModel booksNotifier = ref.read(bookListProvider.notifier);
+    final bool isFetchingMore = booksNotifier.isFetchingMore;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('List Books'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search books...',
+                filled: true,
+                fillColor: Colors.white,
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          ref.read(bookListProvider.notifier).setQuery(null);
+                        },
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              onChanged: (value) {
+                _debouncer.run(() {
+                  ref.read(bookListProvider.notifier).setQuery(value.trim());
+                });
+              },
+            ),
+          ),
+        ),
       ),
       body: booksState.when(
         data: (books) {
@@ -58,8 +100,14 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
               ),
-              itemCount: books.length,
-              itemBuilder: (_, i) => BookCard(book: books[i]),
+              itemCount: books.length + (isFetchingMore ? 1 : 0),
+              itemBuilder: (_, i) {
+                if (i == books.length && isFetchingMore) {
+                  return const BookCardSkeleton();
+                }
+
+                return BookCard(book: books[i]);
+              },
             ),
           );
         },
