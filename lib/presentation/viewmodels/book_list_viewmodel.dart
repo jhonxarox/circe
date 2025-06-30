@@ -17,11 +17,35 @@ class BookListViewModel extends StateNotifier<AsyncValue<List<BookModel>>> {
   int _currentPage = 1;
   bool _hasNextPage = true;
   bool _isFetching = false;
+  bool _isFetchingMore = false;
   List<BookModel> _books = [];
+  String? _currentQuery;
+
+  bool get isFetchingMore => _isFetchingMore;
+
+  void setQuery(String? query) {
+    if (_currentQuery != query) {
+      _currentQuery = query;
+      fetchBooks(isRefresh: true);
+    }
+  }
 
   Future<void> fetchBooks({bool isRefresh = false}) async {
-    if (_isFetching || !_hasNextPage) return;
+    if (_isFetching || (!_hasNextPage && !isRefresh)) return;
+
     _isFetching = true;
+    _isFetchingMore = false;
+
+    if (!isRefresh && _books.isNotEmpty) _isFetchingMore = true;
+    if (isRefresh) {
+      _currentPage = 1;
+      _hasNextPage = true;
+      _books = [];
+      state = const AsyncLoading();
+    } else if (_books.isNotEmpty) {
+      _isFetchingMore = true;
+      state = AsyncData([..._books]);
+    }
 
     try {
       if (isRefresh) {
@@ -30,7 +54,11 @@ class BookListViewModel extends StateNotifier<AsyncValue<List<BookModel>>> {
         _books = [];
       }
 
-      final newBooks = await _service.fetchBooks(page: _currentPage);
+      final List<BookModel> newBooks = await _service.fetchBooks(
+        page: _currentPage,
+        query: _currentQuery,
+      );
+
       if (newBooks.isEmpty) {
         _hasNextPage = false;
       } else {
@@ -43,6 +71,7 @@ class BookListViewModel extends StateNotifier<AsyncValue<List<BookModel>>> {
       state = AsyncError(e, st);
     } finally {
       _isFetching = false;
+      _isFetchingMore = false;
     }
   }
 }
