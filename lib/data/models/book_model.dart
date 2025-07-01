@@ -10,6 +10,8 @@ class BookModel with _$BookModel {
     required String title,
     @Default([]) List<Author> authors,
     @Default([]) List<String> summaries,
+    @Default([]) List<String> subjects,
+    @Default([]) List<String> languages,
     required Map<String, dynamic> formats,
     @JsonKey(name: 'download_count') required int downloadCount,
   }) = _BookModel;
@@ -28,6 +30,18 @@ class Author with _$Author {
 
   factory Author.fromJson(Map<String, dynamic> json) => _$AuthorFromJson(json);
 }
+
+extension BookModelX on BookModel {
+  /// Get first summary if available
+  String? get summary => summaries.isNotEmpty ? summaries.first : null;
+
+  /// Extract author names
+  List<String> get authorNames => authors.map((a) => a.name).toList();
+
+  /// Get book cover image URL
+  String? get imageUrl => formats['image/jpeg'] as String?;
+}
+
 // This model represents a book with its details, including authors and formats.
 // The `BookModel` class is annotated with `@freezed` to generate immutable data
 // classes and JSON serialization methods.

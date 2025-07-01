@@ -18,6 +18,14 @@ _$BookModelImpl _$$BookModelImplFromJson(Map<String, dynamic> json) =>
               ?.map((e) => e as String)
               .toList() ??
           const [],
+      subjects: (json['subjects'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      languages: (json['languages'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
       formats: json['formats'] as Map<String, dynamic>,
       downloadCount: (json['download_count'] as num).toInt(),
     );
@@ -28,6 +36,8 @@ Map<String, dynamic> _$$BookModelImplToJson(_$BookModelImpl instance) =>
       'title': instance.title,
       'authors': instance.authors,
       'summaries': instance.summaries,
+      'subjects': instance.subjects,
+      'languages': instance.languages,
       'formats': instance.formats,
       'download_count': instance.downloadCount,
     };

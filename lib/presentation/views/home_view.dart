@@ -1,5 +1,6 @@
 import 'package:circe/data/models/book_model.dart';
 import 'package:circe/presentation/viewmodels/book_list_viewmodel.dart';
+import 'package:circe/presentation/views/book_detail_view.dart';
 import 'package:circe/presentation/widgets/book_card.dart';
 import 'package:circe/presentation/widgets/book_card_skeleton.dart';
 import 'package:circe/utils/debounce.dart';
@@ -105,8 +106,15 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 if (i == books.length && isFetchingMore) {
                   return const BookCardSkeleton();
                 }
-
-                return BookCard(book: books[i]);
+                return BookCard(
+                  book: books[i],
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BookDetailView(book: books[i]),
+                    ),
+                  ),
+                );
               },
             ),
           );
