@@ -24,6 +24,8 @@ mixin _$BookModel {
   String get title => throw _privateConstructorUsedError;
   List<Author> get authors => throw _privateConstructorUsedError;
   List<String> get summaries => throw _privateConstructorUsedError;
+  List<String> get subjects => throw _privateConstructorUsedError;
+  List<String> get languages => throw _privateConstructorUsedError;
   Map<String, dynamic> get formats => throw _privateConstructorUsedError;
   @JsonKey(name: 'download_count')
   int get downloadCount => throw _privateConstructorUsedError;
@@ -48,6 +50,8 @@ abstract class $BookModelCopyWith<$Res> {
       String title,
       List<Author> authors,
       List<String> summaries,
+      List<String> subjects,
+      List<String> languages,
       Map<String, dynamic> formats,
       @JsonKey(name: 'download_count') int downloadCount});
 }
@@ -71,6 +75,8 @@ class _$BookModelCopyWithImpl<$Res, $Val extends BookModel>
     Object? title = null,
     Object? authors = null,
     Object? summaries = null,
+    Object? subjects = null,
+    Object? languages = null,
     Object? formats = null,
     Object? downloadCount = null,
   }) {
@@ -90,6 +96,14 @@ class _$BookModelCopyWithImpl<$Res, $Val extends BookModel>
       summaries: null == summaries
           ? _value.summaries
           : summaries // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      subjects: null == subjects
+          ? _value.subjects
+          : subjects // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      languages: null == languages
+          ? _value.languages
+          : languages // ignore: cast_nullable_to_non_nullable
               as List<String>,
       formats: null == formats
           ? _value.formats
@@ -116,6 +130,8 @@ abstract class _$$BookModelImplCopyWith<$Res>
       String title,
       List<Author> authors,
       List<String> summaries,
+      List<String> subjects,
+      List<String> languages,
       Map<String, dynamic> formats,
       @JsonKey(name: 'download_count') int downloadCount});
 }
@@ -137,6 +153,8 @@ class __$$BookModelImplCopyWithImpl<$Res>
     Object? title = null,
     Object? authors = null,
     Object? summaries = null,
+    Object? subjects = null,
+    Object? languages = null,
     Object? formats = null,
     Object? downloadCount = null,
   }) {
@@ -156,6 +174,14 @@ class __$$BookModelImplCopyWithImpl<$Res>
       summaries: null == summaries
           ? _value._summaries
           : summaries // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      subjects: null == subjects
+          ? _value._subjects
+          : subjects // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      languages: null == languages
+          ? _value._languages
+          : languages // ignore: cast_nullable_to_non_nullable
               as List<String>,
       formats: null == formats
           ? _value._formats
@@ -177,10 +203,14 @@ class _$BookModelImpl implements _BookModel {
       required this.title,
       final List<Author> authors = const [],
       final List<String> summaries = const [],
+      final List<String> subjects = const [],
+      final List<String> languages = const [],
       required final Map<String, dynamic> formats,
       @JsonKey(name: 'download_count') required this.downloadCount})
       : _authors = authors,
         _summaries = summaries,
+        _subjects = subjects,
+        _languages = languages,
         _formats = formats;
 
   factory _$BookModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -208,6 +238,24 @@ class _$BookModelImpl implements _BookModel {
     return EqualUnmodifiableListView(_summaries);
   }
 
+  final List<String> _subjects;
+  @override
+  @JsonKey()
+  List<String> get subjects {
+    if (_subjects is EqualUnmodifiableListView) return _subjects;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_subjects);
+  }
+
+  final List<String> _languages;
+  @override
+  @JsonKey()
+  List<String> get languages {
+    if (_languages is EqualUnmodifiableListView) return _languages;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_languages);
+  }
+
   final Map<String, dynamic> _formats;
   @override
   Map<String, dynamic> get formats {
@@ -222,7 +270,7 @@ class _$BookModelImpl implements _BookModel {
 
   @override
   String toString() {
-    return 'BookModel(id: $id, title: $title, authors: $authors, summaries: $summaries, formats: $formats, downloadCount: $downloadCount)';
+    return 'BookModel(id: $id, title: $title, authors: $authors, summaries: $summaries, subjects: $subjects, languages: $languages, formats: $formats, downloadCount: $downloadCount)';
   }
 
   @override
@@ -235,6 +283,9 @@ class _$BookModelImpl implements _BookModel {
             const DeepCollectionEquality().equals(other._authors, _authors) &&
             const DeepCollectionEquality()
                 .equals(other._summaries, _summaries) &&
+            const DeepCollectionEquality().equals(other._subjects, _subjects) &&
+            const DeepCollectionEquality()
+                .equals(other._languages, _languages) &&
             const DeepCollectionEquality().equals(other._formats, _formats) &&
             (identical(other.downloadCount, downloadCount) ||
                 other.downloadCount == downloadCount));
@@ -248,6 +299,8 @@ class _$BookModelImpl implements _BookModel {
       title,
       const DeepCollectionEquality().hash(_authors),
       const DeepCollectionEquality().hash(_summaries),
+      const DeepCollectionEquality().hash(_subjects),
+      const DeepCollectionEquality().hash(_languages),
       const DeepCollectionEquality().hash(_formats),
       downloadCount);
 
@@ -273,6 +326,8 @@ abstract class _BookModel implements BookModel {
           required final String title,
           final List<Author> authors,
           final List<String> summaries,
+          final List<String> subjects,
+          final List<String> languages,
           required final Map<String, dynamic> formats,
           @JsonKey(name: 'download_count') required final int downloadCount}) =
       _$BookModelImpl;
@@ -288,6 +343,10 @@ abstract class _BookModel implements BookModel {
   List<Author> get authors;
   @override
   List<String> get summaries;
+  @override
+  List<String> get subjects;
+  @override
+  List<String> get languages;
   @override
   Map<String, dynamic> get formats;
   @override
