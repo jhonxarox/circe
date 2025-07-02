@@ -1,16 +1,68 @@
-# circe
+# 📚 Circe - Gutenberg Book Browser
 
-A new Flutter project.
+Circe is a Flutter app that lets users browse, search, and save books from the [Project Gutenberg](https://gutendex.com/) open dataset.
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+## 🚀 Features
 
-A few resources to get you started if this is your first Flutter project:
+- 🔍 **Search books** by title, author, topic
+- ❤️ **Save books** to your favorites using shared preferences
+- 🖼️ Book cover previews and rich metadata
+- 📱 Built with Flutter + Riverpod + Dio + Shared Preferences
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 🧪 Testing
+
+- `SavedBooksProvider` is unit-tested
+
+- Run tests with:
+```bash
+flutter test
+```
+
+## 🛠️ Setup Instructions
+1. Clone this repo:
+```bash
+git clone https://github.com/your-username/circe.git
+cd circe
+```
+
+2. Install dependencies:
+```bash
+flutter pub get
+```
+
+3. Run the app:
+```bash
+flutter run
+```
+
+4. Run tests (optional):
+```bash
+flutter test
+```
+
+## 🐞 Known Issues
+- Book detail page currently displays only minimal info
+- No pagination for search results
+- Offline caching not implemented
+
+## 📦 Tech Stack
+- Flutter 3.22.0
+- Dart 3.3.x
+- Riverpod
+- Dio
+- Freezed + JsonSerializable
+- SharedPreferences
+- Shimmer
+
+## 📸 Screenshots
+Home View | Saved View |
+------- | ------- |
+![home_page](https://github.com/user-attachments/assets/98fdee00-1ac1-4ef5-94ff-652d697d8b70) | ![saved_list_page](https://github.com/user-attachments/assets/c4ed5467-e1d5-4c6f-80eb-54e98ef06ebc) |
+
+## 📧 Contact
+Made by Jhon Harry Tampubolon\
+📧 : [Send me email](mailto:jhonarox22@gmail.com)\
+🔗 : [Github](https://github.com/jhonxarox)
