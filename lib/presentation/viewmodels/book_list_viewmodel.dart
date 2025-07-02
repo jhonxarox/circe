@@ -1,5 +1,7 @@
 import 'package:circe/data/datasources/book_api_service.dart';
 import 'package:circe/data/models/book_model.dart';
+import 'package:circe/data/models/book_query_params.dart';
+import 'package:circe/data/models/book_response_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final StateNotifierProvider<BookListViewModel, AsyncValue<List<BookModel>>>
@@ -14,16 +16,20 @@ class BookListViewModel extends StateNotifier<AsyncValue<List<BookModel>>> {
   }
 
   final BookApiService _service = BookApiService();
-  int _currentPage = 1;
-  bool _hasNextPage = true;
+  String? _nextPageUrl;
+  String? _prevPageUrl;
   bool _isFetching = false;
   bool _isFetchingMore = false;
   List<BookModel> _books = [];
-  String? _currentQuery;
+  BookQueryParams? _currentQuery;
 
   bool get isFetchingMore => _isFetchingMore;
+  String? get nextPageUrl => _nextPageUrl;
+  String? get previousPageUrl => _prevPageUrl;
 
-  void setQuery(String? query) {
+  void setQuery({
+    BookQueryParams? query,
+  }) {
     if (_currentQuery != query) {
       _currentQuery = query;
       fetchBooks(isRefresh: true);
@@ -31,16 +37,17 @@ class BookListViewModel extends StateNotifier<AsyncValue<List<BookModel>>> {
   }
 
   Future<void> fetchBooks({bool isRefresh = false}) async {
-    if (_isFetching || (!_hasNextPage && !isRefresh)) return;
+    if (_isFetching) return;
 
     _isFetching = true;
     _isFetchingMore = false;
 
     if (!isRefresh && _books.isNotEmpty) _isFetchingMore = true;
+
     if (isRefresh) {
-      _currentPage = 1;
-      _hasNextPage = true;
       _books = [];
+      _nextPageUrl = null;
+      _prevPageUrl = null;
       state = const AsyncLoading();
     } else if (_books.isNotEmpty) {
       _isFetchingMore = true;
@@ -48,24 +55,43 @@ class BookListViewModel extends StateNotifier<AsyncValue<List<BookModel>>> {
     }
 
     try {
-      if (isRefresh) {
-        _currentPage = 1;
-        _hasNextPage = true;
-        _books = [];
-      }
+      final BookResponseModel bookResponseModel =
+          await _service.fetchBooks(query: _currentQuery);
+      _nextPageUrl = bookResponseModel.next;
+      _prevPageUrl = bookResponseModel.previous;
 
-      final List<BookModel> newBooks = await _service.fetchBooks(
-        page: _currentPage,
-        query: _currentQuery,
-      );
+      final List<BookModel> newBooks = bookResponseModel.results;
 
       if (newBooks.isEmpty) {
-        _hasNextPage = false;
+        _books = [...newBooks];
       } else {
         _books.addAll(newBooks);
-        _currentPage++;
       }
 
+      state = AsyncData([..._books]);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    } finally {
+      _isFetching = false;
+      _isFetchingMore = false;
+    }
+  }
+
+  Future<void> fetchNextPage() async {
+    if (_isFetching || _nextPageUrl == null) return;
+
+    _isFetching = true;
+    _isFetchingMore = true;
+    state = AsyncData([..._books]);
+
+    try {
+      final BookResponseModel response =
+          await _service.fetchBooksByUrl(_nextPageUrl!);
+
+      _nextPageUrl = response.next;
+      _prevPageUrl = response.previous;
+
+      _books.addAll(response.results);
       state = AsyncData([..._books]);
     } catch (e, st) {
       state = AsyncError(e, st);

@@ -17,7 +17,7 @@ class BookCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final String authorNames = book.authors.map((a) => a.name).join(', ');
     final String? imageUrl = book.formats['image/jpeg'] as String?;
-    final Set<BookModel> savedIds = ref.watch(savedBooksProvider);
+    final Set<int> savedIds = ref.watch(savedBooksProvider);
     final bool isSaved = savedIds.contains(book);
 
     return GestureDetector(
@@ -56,7 +56,7 @@ class BookCard extends ConsumerWidget {
                           color: isSaved ? Colors.blue : Colors.black,
                         ),
                         onPressed: () {
-                          ref.read(savedBooksProvider.notifier).toggle(book);
+                          ref.read(savedBooksProvider.notifier).toggle(book.id);
                         },
                       ),
                     ),
