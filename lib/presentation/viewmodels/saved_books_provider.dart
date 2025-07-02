@@ -1,20 +1,34 @@
 import 'package:circe/data/models/book_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SavedBooksProvider extends StateNotifier<Set<int>> {
+class SavedBooksProvider extends StateNotifier<Set<BookModel>> {
   SavedBooksProvider() : super({});
 
-  bool isLiked(int bookId) => state.contains(bookId);
+  bool isSaved(BookModel book) => state.any((b) => b.id == book.id);
 
   void toggle(BookModel book) {
-    if (state.contains(book.id)) {
-      state = {...state}..remove(book.id);
+    final BookModel existing = state.firstWhere(
+      (b) => b.id == book.id,
+      orElse: () => BookModel(
+        id: -1,
+        title: '',
+        authors: [],
+        summaries: [],
+        formats: {},
+        downloadCount: 0,
+      ),
+    );
+
+    if (existing.id != -1) {
+      state = {...state}..remove(existing);
     } else {
-      state = {...state}..add(book.id);
+      state = {...state}..add(book);
     }
   }
 }
 
-final likedBooksProvider = StateNotifierProvider<SavedBooksProvider, Set<int>>(
+final StateNotifierProvider<SavedBooksProvider, Set<BookModel>>
+    savedBooksProvider =
+    StateNotifierProvider<SavedBooksProvider, Set<BookModel>>(
   (ref) => SavedBooksProvider(),
 );

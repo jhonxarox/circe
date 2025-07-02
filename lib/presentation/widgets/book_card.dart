@@ -1,7 +1,9 @@
 import 'package:circe/data/models/book_model.dart';
+import 'package:circe/presentation/viewmodels/saved_books_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class BookCard extends StatelessWidget {
+class BookCard extends ConsumerWidget {
   final BookModel book;
   final VoidCallback? onTap;
 
@@ -12,9 +14,11 @@ class BookCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final String authorNames = book.authors.map((a) => a.name).join(', ');
     final String? imageUrl = book.formats['image/jpeg'] as String?;
+    final Set<BookModel> savedIds = ref.watch(savedBooksProvider);
+    final bool isSaved = savedIds.contains(book);
 
     return GestureDetector(
       onTap: onTap,
@@ -23,18 +27,41 @@ class BookCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (imageUrl != null)
-              Image.network(
-                imageUrl,
-                height: 150,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  height: 150,
-                  color: Colors.grey[300],
-                  child: const Center(
-                    child: Icon(Icons.image_not_supported),
+              Stack(
+                children: [
+                  Image.network(
+                    imageUrl,
+                    height: 150,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 150,
+                      color: Colors.grey[300],
+                      child: const Center(
+                        child: Icon(Icons.image_not_supported),
+                      ),
+                    ),
                   ),
-                ),
+                  Positioned(
+                    top: 2,
+                    right: 2,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Theme.of(context).colorScheme.secondaryContainer,
+                      ),
+                      child: IconButton(
+                        icon: Icon(
+                          isSaved ? Icons.bookmark : Icons.bookmark_border,
+                          color: isSaved ? Colors.blue : Colors.black,
+                        ),
+                        onPressed: () {
+                          ref.read(savedBooksProvider.notifier).toggle(book);
+                        },
+                      ),
+                    ),
+                  )
+                ],
               ),
             if (imageUrl == null)
               Container(
