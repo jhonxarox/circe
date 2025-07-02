@@ -18,7 +18,7 @@ class BookCard extends ConsumerWidget {
     final String authorNames = book.authors.map((a) => a.name).join(', ');
     final String? imageUrl = book.formats['image/jpeg'] as String?;
     final Set<int> savedIds = ref.watch(savedBooksProvider);
-    final bool isSaved = savedIds.contains(book);
+    final bool isSaved = savedIds.contains(book.id);
 
     return GestureDetector(
       onTap: onTap,

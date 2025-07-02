@@ -1,4 +1,5 @@
 import 'package:circe/core/constants.dart';
+import 'package:circe/data/models/book_model.dart';
 import 'package:circe/data/models/book_query_params.dart';
 import 'package:circe/data/models/book_response_model.dart';
 import 'package:dio/dio.dart';

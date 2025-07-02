@@ -1,4 +1,8 @@
 import 'package:circe/core/constants.dart';
+import 'package:circe/data/datasources/book_api_service.dart';
+import 'package:circe/data/models/book_model.dart';
+import 'package:circe/data/models/book_query_params.dart';
+import 'package:circe/data/models/book_response_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -13,7 +17,7 @@ class SavedBooksProvider extends StateNotifier<Set<int>> {
         prefs.getStringList(SharedPreferencesKeys.savedBookIds);
 
     if (idStrings != null) {
-      final ids = idStrings.map(int.parse).toSet();
+      final Set<int> ids = idStrings.map(int.parse).toSet();
       state = ids;
     }
   }
@@ -21,8 +25,8 @@ class SavedBooksProvider extends StateNotifier<Set<int>> {
   bool isSaved(int bookId) => state.contains(bookId);
 
   Future<void> toggle(int bookId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final newState = {...state};
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final Set<int> newState = {...state};
 
     if (newState.contains(bookId)) {
       newState.remove(bookId);
@@ -41,4 +45,19 @@ class SavedBooksProvider extends StateNotifier<Set<int>> {
 final StateNotifierProvider<SavedBooksProvider, Set<int>> savedBooksProvider =
     StateNotifierProvider<SavedBooksProvider, Set<int>>(
   (ref) => SavedBooksProvider(),
+);
+
+final FutureProvider<List<BookModel>> savedBookListProvider =
+    FutureProvider<List<BookModel>>(
+  (ref) async {
+    final Set<int> savedIds = ref.watch(savedBooksProvider);
+    if (savedIds.isEmpty) return [];
+
+    final BookApiService api = BookApiService();
+    final BookResponseModel response = await api.fetchBooks(
+      query: BookQueryParams(ids: savedIds.toList()),
+    );
+
+    return response.results;
+  },
 );
