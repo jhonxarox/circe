@@ -1,4 +1,5 @@
 import 'package:circe/data/models/book_model.dart';
+import 'package:circe/data/models/book_query_params.dart';
 import 'package:circe/presentation/viewmodels/book_list_viewmodel.dart';
 import 'package:circe/presentation/views/book_detail_view.dart';
 import 'package:circe/presentation/widgets/book_card.dart';
@@ -25,10 +26,10 @@ class _HomeViewState extends ConsumerState<HomeView> {
     _debouncer = Debouncer(milliseconds: 600);
 
     _scrollController.addListener(() {
-      final maxScroll = _scrollController.position.maxScrollExtent;
-      final currentScroll = _scrollController.position.pixels;
+      final double maxScroll = _scrollController.position.maxScrollExtent;
+      final double currentScroll = _scrollController.position.pixels;
       if (currentScroll >= maxScroll - 300) {
-        ref.read(bookListProvider.notifier).fetchBooks();
+        ref.read(bookListProvider.notifier).fetchNextPage();
       }
     });
   }
@@ -66,7 +67,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                         icon: const Icon(Icons.clear),
                         onPressed: () {
                           _searchController.clear();
-                          ref.read(bookListProvider.notifier).setQuery(null);
+                          ref.read(bookListProvider.notifier).setQuery();
                         },
                       )
                     : null,
@@ -77,7 +78,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
               ),
               onChanged: (value) {
                 _debouncer.run(() {
-                  ref.read(bookListProvider.notifier).setQuery(value.trim());
+                  ref.read(bookListProvider.notifier).setQuery(
+                        query: BookQueryParams(search: value),
+                      );
                 });
               },
             ),

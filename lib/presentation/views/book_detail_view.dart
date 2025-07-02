@@ -13,14 +13,14 @@ class BookDetailView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bool isSaved = ref.watch(savedBooksProvider).contains(book);
+    final bool isSaved = ref.watch(savedBooksProvider).contains(book.id);
     return Scaffold(
       appBar: AppBar(
         title: Text(book.title),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          ref.read(savedBooksProvider.notifier).toggle(book);
+          ref.read(savedBooksProvider.notifier).toggle(book.id);
         },
         child: Icon(
           isSaved ? Icons.bookmark : Icons.bookmark_border,
