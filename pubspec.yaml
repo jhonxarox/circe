@@ -43,6 +43,7 @@ dependencies:
   shared_preferences: ^2.2.2
   shimmer: ^3.0.0
   flutter_sliding_up_panel: ^2.1.1
+  connectivity_plus: ^5.0.2
 
 dev_dependencies:
   flutter_test:

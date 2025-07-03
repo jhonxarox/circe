@@ -1,5 +1,6 @@
 import 'package:circe/data/models/book_model.dart';
 import 'package:circe/data/models/book_query_params.dart';
+import 'package:circe/presentation/providers/connectivity_provider.dart';
 import 'package:circe/presentation/viewmodels/book_list_viewmodel.dart';
 import 'package:circe/presentation/views/book_detail_view.dart';
 import 'package:circe/presentation/widgets/book_card.dart';
@@ -7,6 +8,7 @@ import 'package:circe/presentation/widgets/book_card_skeleton.dart';
 import 'package:circe/presentation/widgets/book_filter_panel.dart';
 import 'package:circe/presentation/widgets/search_bar_widget.dart';
 import 'package:circe/utils/debounce.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_sliding_up_panel/sliding_up_panel_widget.dart';
@@ -48,10 +50,31 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
   @override
   Widget build(BuildContext context) {
+    final AsyncValue<ConnectivityResult> connectivity =
+        ref.watch(connectivityProvider);
+
+    return connectivity.when(
+      data: (connectivityResult) {
+        if (connectivityResult == ConnectivityResult.none) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Book List')),
+            body: const Center(
+                child: Text('Please check your internet connection.')),
+          );
+        }
+        return _buildMainContent(context);
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) => Center(
+        child: Text('Error: $error'),
+      ),
+    );
+  }
+
+  Widget _buildMainContent(BuildContext context) {
     final AsyncValue<List<BookModel>> booksState = ref.watch(bookListProvider);
     final BookListViewModel booksNotifier = ref.read(bookListProvider.notifier);
     final bool isFetchingMore = booksNotifier.isFetchingMore;
-
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
