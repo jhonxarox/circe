@@ -4,9 +4,12 @@ import 'package:circe/presentation/viewmodels/book_list_viewmodel.dart';
 import 'package:circe/presentation/views/book_detail_view.dart';
 import 'package:circe/presentation/widgets/book_card.dart';
 import 'package:circe/presentation/widgets/book_card_skeleton.dart';
+import 'package:circe/presentation/widgets/book_filter_panel.dart';
+import 'package:circe/presentation/widgets/search_bar_widget.dart';
 import 'package:circe/utils/debounce.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_sliding_up_panel/sliding_up_panel_widget.dart';
 
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});
@@ -18,6 +21,7 @@ class HomeView extends ConsumerStatefulWidget {
 class _HomeViewState extends ConsumerState<HomeView> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
+  final SlidingUpPanelController _panelController = SlidingUpPanelController();
   late Debouncer _debouncer;
 
   @override
@@ -48,84 +52,117 @@ class _HomeViewState extends ConsumerState<HomeView> {
     final BookListViewModel booksNotifier = ref.read(bookListProvider.notifier);
     final bool isFetchingMore = booksNotifier.isFetchingMore;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('List Books'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search books...',
-                filled: true,
-                fillColor: Colors.white,
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          ref.read(bookListProvider.notifier).setQuery();
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      behavior: HitTestBehavior.opaque,
+      child: Stack(
+        children: <Widget>[
+          Scaffold(
+            appBar: AppBar(
+              title: const Text('List Books'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.filter_list),
+                  onPressed: () {
+                    _panelController.expand();
+                  },
+                ),
+              ],
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(56),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  child: SearchBarWidget(
+                    controller: _searchController,
+                    onChanged: (value) {
+                      _debouncer.run(() {
+                        ref.read(bookListProvider.notifier).setQuery(
+                              query: BookQueryParams(search: value),
+                            );
+                      });
+                    },
+                    onClear: () {
+                      _searchController.clear();
+                      ref.read(bookListProvider.notifier).setQuery();
+                    },
+                  ),
                 ),
               ),
-              onChanged: (value) {
-                _debouncer.run(() {
-                  ref.read(bookListProvider.notifier).setQuery(
-                        query: BookQueryParams(search: value),
-                      );
-                });
-              },
+            ),
+            body: _buildBookList(
+              booksState: booksState,
+              isFetchingMore: isFetchingMore,
             ),
           ),
-        ),
-      ),
-      body: booksState.when(
-        data: (books) {
-          return RefreshIndicator(
-            onRefresh: () async {
-              await ref
-                  .read(bookListProvider.notifier)
-                  .fetchBooks(isRefresh: true);
+          SlidingUpPanelWidget(
+            controlHeight: 0,
+            panelController: _panelController,
+            onTap: () {
+              if (SlidingUpPanelStatus.expanded == _panelController.status) {
+                return;
+              }
             },
-            child: GridView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(8),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisExtent: 250,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
+            child: SafeArea(
+              child: BookFilterPanel(
+                onApplyFilters: () {
+                  _panelController.collapse();
+                  ref
+                      .read(bookListProvider.notifier)
+                      .fetchBooks(isRefresh: true);
+                },
               ),
-              itemCount: books.length + (isFetchingMore ? 1 : 0),
-              itemBuilder: (_, i) {
-                if (i == books.length && isFetchingMore) {
-                  return const BookCardSkeleton();
-                }
-                return BookCard(
-                  book: books[i],
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => BookDetailView(book: books[i]),
-                    ),
-                  ),
-                );
-              },
             ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(
-          child: Text('Error: $error'),
-        ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBookList({
+    required AsyncValue<List<BookModel>> booksState,
+    required bool isFetchingMore,
+  }) {
+    return booksState.when(
+      data: (books) {
+        return RefreshIndicator(
+          onRefresh: () async {
+            await ref
+                .read(bookListProvider.notifier)
+                .fetchBooks(isRefresh: true);
+          },
+          child: GridView.builder(
+            controller: _scrollController,
+            padding: const EdgeInsets.all(8),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisExtent: 250,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            itemCount: books.length + (isFetchingMore ? 1 : 0),
+            itemBuilder: (_, i) {
+              if (i == books.length && isFetchingMore) {
+                return const BookCardSkeleton();
+              }
+              return BookCard(
+                book: books[i],
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BookDetailView(book: books[i]),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) => Center(
+        child: Text('Error: $error'),
       ),
     );
   }

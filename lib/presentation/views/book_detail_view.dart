@@ -41,8 +41,10 @@ class BookDetailView extends ConsumerWidget {
             const SizedBox(height: 16),
             Text(book.title, style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
-            Text(book.authors.join(', '),
-                style: const TextStyle(color: Colors.grey)),
+            Text(
+              'Author Name : ${book.authorNamesString}',
+              style: const TextStyle(color: Colors.grey),
+            ),
             const SizedBox(height: 16),
             if (book.summary != null)
               Text(book.summary!, style: Theme.of(context).textTheme.bodyLarge),

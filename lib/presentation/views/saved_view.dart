@@ -1,5 +1,6 @@
 import 'package:circe/data/models/book_model.dart';
 import 'package:circe/presentation/viewmodels/saved_books_provider.dart';
+import 'package:circe/presentation/views/book_detail_view.dart';
 import 'package:circe/presentation/widgets/book_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,7 +30,15 @@ class SavedView extends ConsumerWidget {
               mainAxisSpacing: 12,
             ),
             itemCount: books.length,
-            itemBuilder: (_, i) => BookCard(book: books[i]),
+            itemBuilder: (_, i) => BookCard(
+              book: books[i],
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => BookDetailView(book: books[i]),
+                ),
+              ),
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),

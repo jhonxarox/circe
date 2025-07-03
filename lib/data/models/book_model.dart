@@ -40,6 +40,11 @@ extension BookModelX on BookModel {
 
   /// Get book cover image URL
   String? get imageUrl => formats['image/jpeg'] as String?;
+
+  /// Get All author names as a single string
+  String get authorNamesString {
+    return authors.map((a) => a.name).join(', ');
+  }
 }
 
 // This model represents a book with its details, including authors and formats.
