@@ -4,6 +4,7 @@ import 'package:circe/presentation/viewmodels/book_list_viewmodel.dart';
 import 'package:circe/presentation/views/book_detail_view.dart';
 import 'package:circe/presentation/widgets/book_card.dart';
 import 'package:circe/presentation/widgets/book_card_skeleton.dart';
+import 'package:circe/presentation/widgets/search_bar_widget.dart';
 import 'package:circe/utils/debounce.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -55,33 +56,18 @@ class _HomeViewState extends ConsumerState<HomeView> {
           preferredSize: const Size.fromHeight(56),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: TextField(
+            child: SearchBarWidget(
               controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search books...',
-                filled: true,
-                fillColor: Colors.white,
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          ref.read(bookListProvider.notifier).setQuery();
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
               onChanged: (value) {
                 _debouncer.run(() {
                   ref.read(bookListProvider.notifier).setQuery(
                         query: BookQueryParams(search: value),
                       );
                 });
+              },
+              onClear: () {
+                _searchController.clear();
+                ref.read(bookListProvider.notifier).setQuery();
               },
             ),
           ),
