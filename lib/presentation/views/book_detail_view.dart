@@ -1,5 +1,6 @@
 import 'package:circe/data/models/book_model.dart';
 import 'package:circe/presentation/viewmodels/saved_books_provider.dart';
+import 'package:circe/presentation/views/books_by_subject_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -51,7 +52,27 @@ class BookDetailView extends ConsumerWidget {
             const SizedBox(height: 24),
             Wrap(
               spacing: 8,
-              children: book.subjects.map((s) => Chip(label: Text(s))).toList(),
+              children: book.subjects
+                  .map(
+                    (String subject) => ActionChip(
+                      label: Text(subject),
+                      onPressed: () {
+                        final String firstWord = subject
+                            .split(' ')
+                            .first
+                            .replaceAll(RegExp(r'[^\w\s]'), '');
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                BooksBySubjectView(subject: firstWord),
+                          ),
+                        );
+                      },
+                    ),
+                  )
+                  .toList(),
             ),
           ],
         ),
